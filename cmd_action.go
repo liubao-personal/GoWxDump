@@ -2,7 +2,6 @@ package main
 
 import (
 	"GoWxDump/db"
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -80,16 +79,20 @@ func DecryptCmd() {
 	// 判断目录是否存在如果不存，要求用户从userDir中选择一个目录
 	_, err = os.Stat(dataDir)
 	if err != nil {
-		fmt.Println("无法自动识别，请从下面选择一个id，或手动输入完整路径")
+		//fmt.Println("无法自动识别，请从下面选择一个id，或手动输入完整路径")
 		for k, v := range userDir {
 			fmt.Printf("[%s]:%s \n", k, v)
 		}
-		var input string
-		// 提示输入
-		fmt.Print("请选择上述id中的一个:")
-		reader := bufio.NewReader(os.Stdin)
-		tInput, _, _ := reader.ReadLine()
-		input = string(tInput)
+
+		// 直接解密最后一个微信账号
+		var lastID string
+		for k := range userDir {
+			lastID = k
+		}
+
+		// Set input to the default option directly without prompting
+		input := lastID
+
 		// 判断输入是否合法
 		if _, ok := userDir[input]; !ok {
 			// 判断目录是否存在
@@ -110,6 +113,7 @@ func DecryptCmd() {
 			dataDir = userDir[input]
 		}
 	}
+
 	fmt.Println("WeChat DataDir: ", dataDir)
 	// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
 	err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
