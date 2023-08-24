@@ -50,14 +50,32 @@ func ShowInfoCmd() {
 	fmt.Printf("WeChat Account: %s \n", WeChatDataObject.Account)
 	fmt.Printf("WeChat Mobile: %s \n", WeChatDataObject.Mobile)
 	fmt.Printf("WeChat Key: %s \n", WeChatDataObject.Key)
+	// 创建一个新的变量 WeChatInfo，将属性值放入其中
+	WeChatInfo := struct {
+		Version  string
+		NickName string
+		Account  string
+		Mobile   string
+		Key      string
+	}{
+		Version:  WeChatDataObject.Version,
+		NickName: WeChatDataObject.NickName,
+		Account:  WeChatDataObject.Account,
+		Mobile:   WeChatDataObject.Mobile,
+		Key:      WeChatDataObject.Key,
+	}
 	// 将数据转换为 JSON 格式
-	jsonData, err := json.Marshal(WeChatDataObject)
+	jsonData, err := json.Marshal(WeChatInfo)
 	if err != nil {
 		fmt.Println("Error marshaling JSON:", err)
 		return
 	}
 
-	// 写入 JSON 数据到文件
+	// 检查wechat_info.json文件是否存在，存在则删除
+	_, err = os.Stat(".\\decrypted\\wechat_info.json")
+	if err == nil {
+		os.Remove(".\\decrypted\\wechat_info.json")
+	}
 	file, err := os.Create(".\\decrypted\\wechat_info.json")
 	if err != nil {
 		fmt.Println("Error creating file:", err)
