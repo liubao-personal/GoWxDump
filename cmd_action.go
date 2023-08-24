@@ -2,6 +2,7 @@ package main
 
 import (
 	"GoWxDump/db"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -49,6 +50,28 @@ func ShowInfoCmd() {
 	fmt.Printf("WeChat Account: %s \n", WeChatDataObject.Account)
 	fmt.Printf("WeChat Mobile: %s \n", WeChatDataObject.Mobile)
 	fmt.Printf("WeChat Key: %s \n", WeChatDataObject.Key)
+	// 将数据转换为 JSON 格式
+	jsonData, err := json.Marshal(WeChatDataObject)
+	if err != nil {
+		fmt.Println("Error marshaling JSON:", err)
+		return
+	}
+
+	// 写入 JSON 数据到文件
+	file, err := os.Create(".\\decrypted\\wechat_info.json")
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer file.Close()
+
+	_, err = file.Write(jsonData)
+	if err != nil {
+		fmt.Println("Error writing JSON data:", err)
+		return
+	}
+
+	fmt.Println("WeChat info saved to wechat_info.json")
 }
 
 func DecryptCmd() {
