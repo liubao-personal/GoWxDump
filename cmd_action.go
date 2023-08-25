@@ -105,79 +105,60 @@ func DecryptCmd() {
 		fmt.Println("GetWeChatUserDir error: ", err)
 		return
 	}
-	dataDir := ""
-	if IsSupportAutoGetData(WeChatDataObject.Version) {
-		// 获取用户数据目录
-		dataDirName, err := GetWeChatData(WeChatDataObject.WeChatHandle, WeChatDataObject.WeChatWinModel.ModBaseAddr+uintptr(OffSetMap[WeChatDataObject.Version][5]), 100)
+	// 解密成功标识
+	successfulDecryption := false
+	for id, dataDir := range userDir {
+		fmt.Printf("处理中的微信ID [%s]: %s\n", id, dataDir)
+
+		// 判断目录是否存在
+		_, err := os.Stat(dataDir)
 		if err != nil {
-			fmt.Println("GetWeChatDataDir error: ", err)
-			return
-		}
-		// 获取用户数据目录，拼接成绝对路径
-		dataDir = filepath.Join(wechatRoot, dataDirName)
-	}
-
-	// 判断目录是否存在如果不存，要求用户从userDir中选择一个目录
-	_, err = os.Stat(dataDir)
-	if err != nil {
-		//fmt.Println("无法自动识别，请从下面选择一个id，或手动输入完整路径")
-		for k, v := range userDir {
-			fmt.Printf("[%s]:%s \n", k, v)
+			fmt.Println("目录不存在:", dataDir)
+			continue
 		}
 
-		// 直接解密最后一个微信账号
-		var lastID string
-		for k := range userDir {
-			lastID = k
+		// 判断输入的目录中是否存在Msg目录
+		_, err = os.Stat(filepath.Join(dataDir, "Msg", "Multi"))
+		if err != nil {
+			fmt.Println("非微信目录:", dataDir)
+			continue
 		}
 
-		// Set input to the default option directly without prompting
-		input := lastID
-
-		// 判断输入是否合法
-		if _, ok := userDir[input]; !ok {
-			// 判断目录是否存在
-			fmt.Println(input)
-			_, err = os.Stat(input)
-			if err != nil {
-				fmt.Println("目录不存在")
-				return
-			}
-			// 判断输入的目录中是否存在Msg目录
-			_, err = os.Stat(filepath.Join(input, "Msg", "Multi"))
-			if err != nil {
-				fmt.Println("非微信目录")
-				return
-			}
-			dataDir = input
-		} else {
-			dataDir = userDir[input]
+		// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
+		err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
+		if err != nil {
+			fmt.Println("CopyMsgDb error: ", err)
+			continue
 		}
+		err = CopyMsgDb(filepath.Join(dataDir, "Msg"))
+		if err != nil {
+			fmt.Println("CopyMicroMsgDb error: ", err)
+			continue
+		}
+
+		// 解密tmp目录下的所有.db文件，解密后的文件放在decrypted目录下
+		err = DecryptDb(WeChatDataObject.Key)
+		if err != nil {
+			fmt.Println("DecryptDb error: ", err)
+			continue
+		}
+
+		// 清理缓存目录
+		err = os.RemoveAll(CurrentPath + "\\tmp")
+		if err != nil {
+			fmt.Println("RemoveAll error: ", err)
+		}
+
+		fmt.Printf("处理完成的微信ID [%s]\n", id)
+
+		successfulDecryption = true
+		break
 	}
 
-	fmt.Println("WeChat DataDir: ", dataDir)
-	// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
-	err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
-	if err != nil {
-		fmt.Println("CopyMsgDb error: ", err)
-		return
-	}
-	err = CopyMsgDb(filepath.Join(dataDir, "Msg"))
-	if err != nil {
-		fmt.Println("CopyMicroMsgDb error: ", err)
-		return
-	}
-	// 解密tmp目录下的所有.db文件，解密后的文件放在decrypted目录下
-	err = DecryptDb(WeChatDataObject.Key)
-	if err != nil {
-		fmt.Println("DecryptDb error: ", err)
-		return
-	}
-	// 清理缓存目录
-	err = os.RemoveAll(CurrentPath + "\\tmp")
-	if err != nil {
-		fmt.Println("RemoveAll error: ", err)
-		return
+	if successfulDecryption {
+		fmt.Println("登陆的微信成功解密。")
+	} else {
+		fmt.Println("所有目录解密失败。")
 	}
 }
 
