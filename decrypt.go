@@ -52,8 +52,19 @@ func Decrypt(key string, filePath string, decryptedPath string) error {
 	hash_mac.Write([]byte{1, 0, 0, 0})
 	if bytes.Equal(hash_mac.Sum(nil), first[len(first)-32:len(first)-12]) {
 		fmt.Println("Decryption Success")
+		// 将成功状态写入当前目录下的decrypted/decrypted.json,先检查有没有这个文件，有就删除再创建,写入的格式是{"status": true, "message": "解密成功"}
+		successStatus := []byte(`{"status": true, "message": "解密成功"}`)
+		err = os.WriteFile("decrypted/decrypted.json", successStatus, 0666)
+		if err != nil {
+			return err
+		}
 	} else {
 		fmt.Println("Password Error")
+		failStatus := []byte(`{"status": false, "message": "解密失败"}`)
+		err = os.WriteFile("decrypted/decrypted.json", failStatus, 0666)
+		if err != nil {
+			return err
+		}
 	}
 
 	// 将python代码：blist = [blist[i:i + DEFAULT_PAGESIZE] for i in range(DEFAULT_PAGESIZE, len(blist), DEFAULT_PAGESIZE)] 转成go语言

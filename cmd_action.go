@@ -105,8 +105,6 @@ func DecryptCmd() {
 		fmt.Println("GetWeChatUserDir error: ", err)
 		return
 	}
-	// 解密成功标识
-	successfulDecryption := false
 	for id, dataDir := range userDir {
 		fmt.Printf("处理中的微信ID [%s]: %s\n", id, dataDir)
 
@@ -114,33 +112,28 @@ func DecryptCmd() {
 		_, err := os.Stat(dataDir)
 		if err != nil {
 			fmt.Println("目录不存在:", dataDir)
-			continue
 		}
 
 		// 判断输入的目录中是否存在Msg目录
 		_, err = os.Stat(filepath.Join(dataDir, "Msg", "Multi"))
 		if err != nil {
 			fmt.Println("非微信目录:", dataDir)
-			continue
 		}
 
 		// 复制聊天记录文件到缓存目录dataDir + \Msg\Multi
 		err = CopyMsgDb(filepath.Join(dataDir, "Msg", "Multi"))
 		if err != nil {
 			fmt.Println("CopyMsgDb error: ", err)
-			continue
 		}
 		err = CopyMsgDb(filepath.Join(dataDir, "Msg"))
 		if err != nil {
 			fmt.Println("CopyMicroMsgDb error: ", err)
-			continue
 		}
 
 		// 解密tmp目录下的所有.db文件，解密后的文件放在decrypted目录下
 		err = DecryptDb(WeChatDataObject.Key)
 		if err != nil {
 			fmt.Println("DecryptDb error: ", err)
-			continue
 		}
 
 		// 清理缓存目录
@@ -151,15 +144,39 @@ func DecryptCmd() {
 
 		fmt.Printf("处理完成的微信ID [%s]\n", id)
 
-		successfulDecryption = true
-		break
+		// 读取当前目录下decrypted/decrypted.json里面的status属性，如果status为true，则终止循环
+		status, err := readDecryptedJSONStatus()
+		if err != nil {
+			fmt.Println("Error reading decrypted.json: ", err)
+		} else if status {
+			fmt.Printf("检测到已有解密成功的微信，终止处理\n\n")
+			break
+		} else {
+			fmt.Printf("未检测到已有解密成功的微信，继续处理\n\n")
+		}
 	}
 
-	if successfulDecryption {
-		fmt.Println("登陆的微信成功解密。")
-	} else {
-		fmt.Println("所有目录解密失败。")
+}
+
+// 读取decrypted/decrypted.json里面的status属性
+func readDecryptedJSONStatus() (bool, error) {
+	filePath := filepath.Join(CurrentPath, "decrypted", "decrypted.json")
+	file, err := os.Open(filePath)
+	if err != nil {
+		return false, err
 	}
+	defer file.Close()
+
+	var decryptedData struct {
+		Status bool `json:"status"`
+	}
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&decryptedData); err != nil {
+		return false, err
+	}
+
+	return decryptedData.Status, nil
 }
 
 func FriendsListCmd() {

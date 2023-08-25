@@ -1,2 +1,5 @@
 @echo off
-start "" "GoWxDump.exe" -spy
+start /wait "" "GoWxDump.exe" -spy
+
+cd decrypted 
+start "" "my-app.exe"
