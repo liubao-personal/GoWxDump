@@ -18,14 +18,15 @@ import (
 
 // 定义微信数据结构
 type WeChatData struct {
-	Version        string
-	NickName       string
-	Account        string
-	Mobile         string
-	Key            string
-	WeChatProcess  windows.ProcessEntry32
-	WeChatHandle   windows.Handle
-	WeChatWinModel windows.ModuleEntry32
+	Version           string
+	NickName          string
+	Account           string
+	Mobile            string
+	Key               string
+	WeChatProcess     windows.ProcessEntry32
+	WeChatHandle      windows.Handle
+	WeChatWinBaseAddr uint64
+	WeChatWinFullName string
 }
 
 var PROCESS_ALL_ACCESS = uint32(
