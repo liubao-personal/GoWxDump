@@ -207,7 +207,7 @@ func GetWeChatUserDir(wechatRoot string) (map[string]string, error) {
 	}
 	for _, file := range files {
 		// 排除All Users目录和Applet目录
-		if file.Name() == "All Users" || file.Name() == "Applet" || file.Name() == "WMPF" || file.Name() == "mmTest_writable_weixin.txt" {
+		if file.Name() == "All Users" || file.Name() == "Applet" || file.Name() == "WMPF" || file.Name() == "Finderlive" || file.Name() == "mmTest_writable_weixin.txt" {
 			continue
 		}
 		userDir[file.Name()] = filepath.Join(wechatRoot, file.Name())
