@@ -2,6 +2,8 @@
 ## 特别说明
 本项目是基于[https://github.com/SpenserCai/GoWxDump](https://github.com/SpenserCai/GoWxDump)而来
 
+主要支持了微信最新版多个微信账号时自动解密，不用手动输入微信id
+
 ### 交互式命令
 ```bash
 show_info 获取微信基础信息
