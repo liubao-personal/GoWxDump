@@ -1,0 +1,15 @@
+{
+  "BATCH_SIZE": 300,
+  "BATCH_SIZE_MSG": 500,
+  "DELAY_BETWEEN_REQUESTS": 1000,
+  "httpModule": "http",
+  "hostname": "10.0.0.53",
+  "port": 48080,
+  "url": "/admin-api",
+  "pushChatRoomUrl": "/scrm/wx/wx-chatroom/push-chatroom",
+  "pushChatRoomMemberUrl": "/scrm/wx/wx-chatroom/push-chatroom/members",
+  "pushChatRoomInfoUrl": "/scrm/wx/wx-chatroom/push-chatroom/info",
+  "pushContactUrl": "/scrm/wx/wx-chatroom/push-contact",
+  "pushContactHeadImgUrl": "/scrm/wx/wx-chatroom/push-contact/head-img-url",
+  "pushMsgUrl": "/scrm/wx/wx-chatroom/push-msg"
+}
